@@ -4,6 +4,7 @@
   'use strict';
 
   const MAX_FAME = 3600; // one player cannot earn more than this in a week
+  const MIN_FAME = 1000; // chart floor - below this is basically not playing, so the axis starts here
   let dashboard = null;
   let openChart = null; // the single Chart.js instance that exists at a time
   let openRow = null;
@@ -66,7 +67,7 @@
       const s = stats[key];
       if (!s) { pen = false; return; }
       const x = pad + i * step;
-      const y = height - pad - (s.fame / MAX_FAME) * (height - pad * 2);
+      const y = height - pad - (Math.max(0, s.fame - MIN_FAME) / (MAX_FAME - MIN_FAME)) * (height - pad * 2);
       d += (pen ? ' L' : ' M') + x.toFixed(1) + ' ' + y.toFixed(1);
       pen = true;
       lastPoint = [x, y];
@@ -110,7 +111,8 @@
         plugins: { legend: { display: false } },
         scales: {
           // Fixed axis on purpose: every chart on the site should be comparable at a glance.
-          y: { min: 0, max: MAX_FAME, ticks: { stepSize: 600 } },
+          // Points below MIN_FAME are clipped to the floor by Chart.js.
+          y: { min: MIN_FAME, max: MAX_FAME, ticks: { stepSize: 400 } },
           x: { ticks: { autoSkip: true, maxRotation: 45 } },
         },
       },
