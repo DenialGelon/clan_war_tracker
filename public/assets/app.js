@@ -4,7 +4,7 @@
   'use strict';
 
   const MAX_FAME = 3600; // one player cannot earn more than this in a week
-  const MIN_FAME = 1000; // chart floor - below this is basically not playing, so the axis starts here
+  const MIN_FAME = 1200; // chart floor - below this is basically not playing, and 1200..3600 in steps of 400 gives tidy gridlines
   let dashboard = null;
   let openChart = null; // the single Chart.js instance that exists at a time
   let openRow = null;

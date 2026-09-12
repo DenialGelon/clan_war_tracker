@@ -103,4 +103,4 @@ Steps:
 - `war_weeks` has one row per clan per River Race week. The in-progress week comes from `currentriverrace` and is marked provisional until it appears in `riverracelog`.
 - `participants` has one row per player per week per clan. Joined on player tag, never name.
 - `member_snapshots` records the roster on each fetch. "Current" means present in the newest snapshot; "former" means in `participants` for our clan but not current.
-- Weekly fame maxes out at 3600 (16 decks, 225 per win), which is why every chart uses a fixed axis ending at 3600. The axis starts at 1000 because anything lower is effectively a missed week.
+- Weekly fame maxes out at 3600 (16 decks, 225 per win), which is why every chart uses a fixed axis ending at 3600. The axis starts at 1200 because anything lower is effectively a missed week.

@@ -13,14 +13,14 @@ Host: cPanel shared hosting (Exact Hosting / qualityhostonline.com)
 - Current phase: local development on Dan's machine. The Supercell API key in use is whitelisted for the development IP `97.129.96.115`. A separate key will be created for the host's outbound IP at deploy time.
 - Host facts (checked 2026-09-12): home `/home/dancemu`; danteachesmath.net document root `/home/dancemu/public_html/danteachesmath`; domain runs PHP 8.3 (`ea-php83`, CLI `/usr/local/bin/ea-php83`); cron available; server `sardine.exacthosting.com` at `209.59.190.133`. Outbound IP is very likely the same address but is not proven until the first live fetch succeeds. `pdo_sqlite` on ea-php83 is likewise unverified. See README "Deploy to cPanel".
 - Local PHP is 8.5; code targets PHP 8.1 syntax so it runs on the host's 8.3 with room to spare.
-- Interface (decided 2026-09-12): compact member rows (name, tag, role, last week fame, SVG sparkline). Tapping a row expands the full 1000 to 3600 Chart.js chart in place; only one chart exists at a time. Former members are collapsed behind a toggle. No Refresh button in v1; cron is enough.
+- Interface (decided 2026-09-12): compact member rows (name, tag, role, last week fame, SVG sparkline). Tapping a row expands the full 1200 to 3600 Chart.js chart in place; only one chart exists at a time. Former members are collapsed behind a toggle. No Refresh button in v1; cron is enough.
 
 ## Hard requirements
 
 1. **Main list: current clan members.** Pulled from `/clans/{tag}/members`. Show name, tag, role, and a line graph of their weekly war fame.
 2. **Second list: historical (former) clan members.** Anyone who appears in stored war data but is not in the current member list. Same graph treatment.
 3. **Persist every download.** Every API response is stored raw (JSON, with a fetch timestamp) and then parsed into normalized tables. Never overwrite history. The API only returns roughly the last 10 weeks of River Race log; our stored data is the long-term record.
-4. **Line graph with a fixed y-axis from 1000 to 3600** (changed from 0 on 2026-09-12; under 1000 is effectively not playing). X-axis is war week (season + section). Y-axis is fame (medals) for that week. Do not autoscale.
+4. **Line graph with a fixed y-axis from 1200 to 3600** (changed from 0 on 2026-09-12; under 1000 is effectively not playing). X-axis is war week (season + section). Y-axis is fame (medals) for that week. Do not autoscale.
 5. **Player lookup box.** A text input where a player tag can be pasted. On submit, show that player's clan war history only. Used to vet players who want to join. See "Player lookup" below.
 
 ## Architecture
@@ -113,7 +113,7 @@ Show a clear message when the tag is invalid, the player is not in a clan, or no
 - Section 1: current members, sorted by fame in the most recent completed week (descending), then name.
 - Section 2: historical members, sorted by last week seen (most recent first).
 - Each member row: name, tag, role (current members only), weeks recorded, line graph.
-- Line graph: Chart.js line chart, y-axis fixed min 1000 max 3600, x-axis labeled by season and week (e.g. "S133 W4"). Missing weeks are gaps, not zeros, unless the player was a member that week and recorded 0.
+- Line graph: Chart.js line chart, y-axis fixed min 1200 max 3600, x-axis labeled by season and week (e.g. "S133 W4"). Missing weeks are gaps, not zeros, unless the player was a member that week and recorded 0.
 - Lookup box at the top of the page.
 - Works on mobile. Most clan members will look at this on a phone.
 
