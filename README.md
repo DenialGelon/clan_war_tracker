@@ -1,8 +1,22 @@
-# clan_war_tracker
+# Clan War Tracker
 
-A small dashboard for one Clash Royale clan: current members, former members, and each person's weekly clan war (River Race) fame over time. Data comes from the official Supercell API and is stored locally on every fetch, so history keeps growing past the API's ten-week window.
+A small, self-hosted dashboard for one Clash Royale clan. It shows every current member's clan war (River Race) fame week by week, keeps a list of former members and how they did, and lets you paste a player tag to vet someone who wants to join.
 
 Live: https://danteachesmath.net/clan
+
+![Screenshot of the clan war tracker showing the member list and an expanded fame chart](docs/screenshot.jpg)
+
+## Why
+
+The official Clash Royale API only returns the last ten war weeks. This project fetches that data on a schedule, stores every response, and builds up a long-term record so the chart keeps growing past the API's window.
+
+## Features
+
+- **Current members** sorted by last week's fame, each with a small trend line. Tap a row for the full chart and a per-week table.
+- **Former members** who fought for the clan but have since left, collapsed behind a toggle.
+- **Player lookup** by tag. Pulls the player's current clan and charts their recent weeks, so you can see a recruit's history before they join.
+- **Fixed chart scale** from 1200 to 3600 fame on every chart, so any two players are comparable at a glance.
+- **Nothing to build.** PHP, SQLite, and a static page with Chart.js from a CDN. Runs on shared cPanel hosting.
 
 ## Requirements
 
