@@ -1,0 +1,124 @@
+:root {
+  --bg: #f4f5f8;
+  --card: #ffffff;
+  --text: #1c1e26;
+  --muted: #6b7080;
+  --line: #e2e4ea;
+  --accent: #2f6fed;
+  --accent-soft: #dbe6ff;
+  --fame-bar: #ffd66b;
+  --fame-bar-strong: #f4a825;
+  --danger: #c0392b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.site-header {
+  padding: 20px 16px 8px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.site-header h1 { margin: 0; font-size: 1.6rem; }
+.meta { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 8px 16px 40px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.card h2 { margin: 0 0 4px; font-size: 1.15rem; }
+.count { color: var(--muted); font-weight: normal; font-size: 0.95rem; }
+.hint { margin: 0 0 12px; color: var(--muted); font-size: 0.88rem; }
+
+/* Lookup form */
+#lookup-form { display: flex; gap: 8px; }
+#lookup-tag {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+button[disabled] { opacity: 0.6; cursor: default; }
+button.toggle { background: var(--accent-soft); color: var(--accent); }
+
+.lookup-head { margin: 12px 0 4px; }
+.lookup-head strong { font-size: 1.1rem; }
+.note { color: var(--muted); font-size: 0.9rem; margin: 6px 0; }
+.error { color: var(--danger); }
+
+/* Member tables */
+.table-wrap { overflow-x: auto; }
+table.members { width: 100%; border-collapse: collapse; }
+table.members th, table.members td {
+  padding: 8px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+table.members th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+table.members th.num, table.members td.num { text-align: right; white-space: nowrap; }
+table.members th.trend, table.members td.trend { width: 96px; }
+table.members tr.row { cursor: pointer; }
+table.members tr.row:hover { background: #f8f9fc; }
+table.members tr.row.open { background: var(--accent-soft); }
+td.rank { color: var(--muted); width: 2em; }
+.player-name { font-weight: 600; }
+.player-sub { color: var(--muted); font-size: 0.8rem; }
+
+/* Fame cell: number over a proportional bar */
+.fame {
+  display: inline-block;
+  min-width: 56px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--fame-bar) var(--pct, 0%), transparent var(--pct, 0%));
+  font-variant-numeric: tabular-nums;
+}
+.fame.none { color: var(--muted); }
+
+svg.spark { display: block; width: 90px; height: 26px; }
+svg.spark path { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+svg.spark circle { fill: var(--accent); }
+svg.spark .prov { stroke-dasharray: 2 2; }
+
+/* Expanded detail row */
+tr.detail td { padding: 12px 6px 16px; background: #fbfbfd; }
+.chart-box { position: relative; height: 220px; width: 100%; }
+table.weeks { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+table.weeks th, table.weeks td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+table.weeks th:first-child, table.weeks td:first-child { text-align: left; }
+table.weeks th { color: var(--muted); font-weight: 600; }
+
+.footnote { color: var(--muted); font-size: 0.8rem; }
+
+@media (max-width: 480px) {
+  table.members th.trend, table.members td.trend { width: 70px; }
+  svg.spark { width: 64px; }
+  .chart-box { height: 200px; }
+}

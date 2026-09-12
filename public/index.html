@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clan War Tracker</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <h1 id="clan-name">Clan War Tracker</h1>
+  <p class="meta" id="clan-meta">Loading...</p>
+</header>
+
+<main>
+  <section class="card" id="lookup">
+    <h2>Look up a player</h2>
+    <form id="lookup-form" autocomplete="off">
+      <input id="lookup-tag" type="text" inputmode="text" placeholder="Player tag, e.g. #RG0GUVJG" required>
+      <button type="submit" id="lookup-button">Search</button>
+    </form>
+    <p class="hint">Paste a tag to see that player's recent clan war fame. Handy for vetting people who want to join.</p>
+    <div id="lookup-result" hidden></div>
+  </section>
+
+  <section class="card">
+    <h2>Current members <span class="count" id="current-count"></span></h2>
+    <p class="hint">Sorted by fame in the last finished war week. Tap a row for the full chart.</p>
+    <div class="table-wrap">
+      <table class="members" id="current-table">
+        <thead>
+          <tr><th>#</th><th>Player</th><th class="num">Last week</th><th class="trend">Trend</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Former members <span class="count" id="former-count"></span></h2>
+    <p class="hint">People who fought in a war for us but are no longer in the clan.</p>
+    <button type="button" class="toggle" id="former-toggle">Show former members</button>
+    <div class="table-wrap" id="former-wrap" hidden>
+      <table class="members" id="former-table">
+        <thead>
+          <tr><th>#</th><th>Player</th><th class="num">Last seen</th><th class="trend">Trend</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="footnote" id="footnote"></p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

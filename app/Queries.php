@@ -203,6 +203,36 @@ final class Queries
         return $rows;
     }
 
+    /**
+     * Union of all stored weeks across several clans, oldest first. Used as the
+     * x-axis for a player's lookup chart so weeks they sat out show as gaps.
+     *
+     * @param list<string> $clanTags
+     * @return list<array{key: string, label: string, provisional: bool}>
+     */
+    public function weeksForClans(array $clanTags): array
+    {
+        if ($clanTags === []) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($clanTags), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT season_id, section_index, MIN(provisional) AS provisional
+             FROM war_weeks WHERE clan_tag IN ($placeholders)
+             GROUP BY season_id, section_index ORDER BY season_id, section_index"
+        );
+        $stmt->execute(array_values($clanTags));
+        $weeks = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $weeks[] = [
+                'key' => Parser::weekKey((int) $row['season_id'], (int) $row['section_index']),
+                'label' => Parser::weekLabel((int) $row['season_id'], (int) $row['section_index']),
+                'provisional' => (int) $row['provisional'] === 1,
+            ];
+        }
+        return $weeks;
+    }
+
     /** @return array{tag: string, name: string}|null */
     public function player(string $playerTag): ?array
     {

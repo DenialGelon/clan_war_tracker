@@ -2,7 +2,7 @@
 
 A dashboard for one Clash Royale clan that lists clan members and shows each member's clan war (River Race) performance over time. Data comes from the official Supercell Clash Royale API and is stored locally on every fetch so history accumulates beyond the API's short rolling window.
 
-Repo: github.com/<owner>/clan_war_tracker
+Repo: github.com/DenialGelon/clan_war_tracker
 Live URL: https://danteachesmath.net/clan
 Host: cPanel shared hosting (Exact Hosting / qualityhostonline.com)
 
@@ -12,6 +12,8 @@ Host: cPanel shared hosting (Exact Hosting / qualityhostonline.com)
 - Clan tag: `#JUQRRL8` (normalized: `JUQRRL8`)
 - Current phase: local development on Dan's machine. The Supercell API key in use is whitelisted for the development IP `97.129.96.115`. A separate key will be created for the host's outbound IP at deploy time.
 - Still to confirm before deploy: host outbound IP, host PHP version, cPanel cron availability.
+- Local PHP is 8.5; code targets 8.1 syntax until the host version is known.
+- Interface (decided 2026-09-12): compact member rows (name, tag, role, last week fame, SVG sparkline). Tapping a row expands the full 0 to 3600 Chart.js chart in place; only one chart exists at a time. Former members are collapsed behind a toggle. No Refresh button in v1; cron is enough.
 
 ## Hard requirements
 
@@ -65,6 +67,8 @@ Notes:
 - Respect rate limits. Cache responses; the data changes at most a few times a day.
 - Handle 403 (bad key or wrong IP), 404 (bad tag), 429 (rate limit), 503 (maintenance) explicitly with clear messages.
 - The API returns roughly 10 River Race log entries. Do not assume more.
+- `currentriverrace` has no `seasonId`. Derive it from the newest log entry: if the current `sectionIndex` is higher than the last logged one it is the same season, otherwise a new season started. Seasons have a variable number of weeks (4 and 5 both seen).
+- Player names can contain colour codes like `<c7>Name`. Store as-is, strip for display.
 - Participants in old log entries include players who have since left. Join on player tag, never on name. Names change.
 
 ## Data model
@@ -116,8 +120,9 @@ Show a clear message when the tag is invalid, the player is not in a clan, or no
 ## Local development
 
 - Run the site: `php -S localhost:8000 -t public` and open http://localhost:8000
+- Run tests: `php tests/run.php` (plain PHP runner, no Composer)
 - Run a fetch: `php scripts/fetch.php`
-- Config path is read from the `CWT_CONFIG` environment variable, falling back to `../config.php` relative to the repo root. Local and host use different config files with different API keys; never commit either.
+- Config path is read from the `CWT_CONFIG` environment variable, falling back to `config.php` in the repo root (gitignored). Local and host use different config files with different API keys; never commit either.
 - Fixture mode: setting `use_fixtures = true` in config makes the fetch script read saved JSON from `tests/fixtures/` instead of calling the API. Use this for all parser, database, and UI work. Only hit the live API when testing the fetch itself.
 - Capture fixtures once with a small helper (`php scripts/save_fixtures.php`) that saves each endpoint's raw response to `tests/fixtures/<endpoint>.json`.
 - Match the host's PHP minor version once it is known.
