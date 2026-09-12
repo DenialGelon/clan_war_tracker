@@ -11,8 +11,8 @@ Host: cPanel shared hosting (Exact Hosting / qualityhostonline.com)
 - Language and runtime: PHP 8.x. No frameworks. Required extensions: curl, pdo_sqlite, json.
 - Clan tag: `#JUQRRL8` (normalized: `JUQRRL8`)
 - Current phase: local development on Dan's machine. The Supercell API key in use is whitelisted for the development IP `97.129.96.115`. A separate key will be created for the host's outbound IP at deploy time.
-- Still to confirm before deploy: host outbound IP, host PHP version, cPanel cron availability.
-- Local PHP is 8.5; code targets 8.1 syntax until the host version is known.
+- Host facts (checked 2026-09-12): home `/home/dancemu`; danteachesmath.net document root `/home/dancemu/public_html/danteachesmath`; domain runs PHP 8.3 (`ea-php83`, CLI `/usr/local/bin/ea-php83`); cron available; server `sardine.exacthosting.com` at `209.59.190.133`. Outbound IP is very likely the same address but is not proven until the first live fetch succeeds. `pdo_sqlite` on ea-php83 is likewise unverified. See README "Deploy to cPanel".
+- Local PHP is 8.5; code targets PHP 8.1 syntax so it runs on the host's 8.3 with room to spare.
 - Interface (decided 2026-09-12): compact member rows (name, tag, role, last week fame, SVG sparkline). Tapping a row expands the full 0 to 3600 Chart.js chart in place; only one chart exists at a time. Former members are collapsed behind a toggle. No Refresh button in v1; cron is enough.
 
 ## Hard requirements
@@ -48,7 +48,7 @@ clan_war_tracker/
 - **Storage:** SQLite, single file in `data/`. Fine for one clan.
 - **Frontend:** plain HTML, CSS, and JavaScript. Chart.js from a CDN for the line graph. No build step.
 - **Secrets:** the API key lives in a config file outside `public_html`, never in the repo. `config.example.*` is committed; the real config is not.
-- **Deploy:** `public/` contents go to `public_html/clan`. `app/`, `data/`, `scripts/`, and config go one level above `public_html`. Document the exact paths in README once known.
+- **Deploy:** `public/` contents go to `/home/dancemu/public_html/danteachesmath/clan`. `app/`, `data/`, `scripts/`, and config go in `/home/dancemu/clan_war_tracker/`. The endpoints locate `app/` by walking up the tree. Exact steps are in README.
 
 ## Supercell API
 

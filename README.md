@@ -50,20 +50,52 @@ JSON endpoints read by the page:
 
 ## Deploy to cPanel
 
-1. Create an API key whitelisted for the host's outbound IP (not the site's DNS IP). Find it with `curl -s https://api.ipify.org` from a cPanel terminal or a cron job that emails its output.
-2. Above `public_html`, create `clan_war_tracker/` and upload `app/`, `scripts/`, `tests/` (optional), and a filled-in `config.php` with `db_path` pointing to a writable `data/` directory there.
-3. Upload the contents of `public/` to `public_html/clan/`.
-4. The endpoints find `app/` automatically when it sits at `../../../app` relative to `public_html/clan/api/`. If the layout differs, set the `CWT_APP_DIR` environment variable, or edit the candidate list in `public/api/_bootstrap.php`.
-5. Add a cron job. Monday 10:30 UTC catches the finished week; a daily run keeps the in-progress week fresh:
+Host facts (checked 2026-09-12 in cPanel):
+
+| Item | Value |
+| --- | --- |
+| Account home | `/home/dancemu` |
+| Document root for danteachesmath.net | `/home/dancemu/public_html/danteachesmath` |
+| PHP for that domain | 8.3 (`ea-php83`), CLI at `/usr/local/bin/ea-php83` |
+| Server | `sardine.exacthosting.com`, shared IP `209.59.190.133` |
+| Cron jobs | Available. Output is emailed to the address set on the Cron Jobs page. |
+| Terminal | Present in cPanel but the WebSocket would not connect from the browser extension. |
+
+Target layout on the host:
+
+```
+/home/dancemu/clan_war_tracker/          <- not web accessible
+  app/
+  scripts/
+  data/                                   <- must be writable; SQLite file lives here
+  config.php                              <- host API key, db_path pointing at data/
+/home/dancemu/public_html/danteachesmath/clan/   <- contents of public/
+  index.html
+  assets/
+  api/
+```
+
+Steps:
+
+1. **API key.** In the Supercell developer portal create a second key whitelisted for `209.59.190.133`. That is the server's own address (its hostname and SPF record both point at it), so it is almost certainly the outbound IP too. If the first fetch returns 403, the host is NATed: run `php -r 'echo file_get_contents("https://api.ipify.org");'` on the server via cron with email output, and re-create the key for whatever it prints.
+2. **Upload** `app/`, `scripts/`, and an empty `data/` to `/home/dancemu/clan_war_tracker/`. Create `config.php` there from `config.example.php` with the new key and `'db_path' => __DIR__ . '/data/clan_war_tracker.sqlite'`.
+3. **Upload** the contents of `public/` to `/home/dancemu/public_html/danteachesmath/clan/`. The endpoints find `app/` by walking up the directory tree, so no path edits are needed for this layout. If it ever moves, set `CWT_APP_DIR` or edit `public/api/_bootstrap.php`.
+4. **First fetch.** Add a one-off cron job for a minute or two from now, wait for the email, then delete it:
 
    ```
-   30 10 * * 1 CWT_CONFIG=/home/USER/clan_war_tracker/config.php php /home/USER/clan_war_tracker/scripts/fetch.php >> /home/USER/clan_war_tracker/data/fetch.log 2>&1
-   0 4 * * * CWT_CONFIG=/home/USER/clan_war_tracker/config.php php /home/USER/clan_war_tracker/scripts/fetch.php >> /home/USER/clan_war_tracker/data/fetch.log 2>&1
+   CWT_CONFIG=/home/dancemu/clan_war_tracker/config.php /usr/local/bin/ea-php83 /home/dancemu/clan_war_tracker/scripts/fetch.php
    ```
 
-6. Run `fetch.php` once by hand and load the page.
+   The email should read `members: N`, `log weeks: 10`, `in-progress week saved`. A 403 means the key's IP is wrong. A "could not find driver" error means `pdo_sqlite` is missing from ea-php83, in which case switch the domain to a version that has it in MultiPHP Manager, or ask the host to enable it.
+5. **Schedule.** Add two cron jobs. Monday 10:30 UTC catches the finished week; a daily run keeps the in-progress week fresh. Redirect output so cron does not email every run:
 
-Still to confirm before the first deploy: the host's outbound IP, its PHP version, and that cPanel cron is available.
+   ```
+   30 10 * * 1 CWT_CONFIG=/home/dancemu/clan_war_tracker/config.php /usr/local/bin/ea-php83 /home/dancemu/clan_war_tracker/scripts/fetch.php >> /home/dancemu/clan_war_tracker/data/fetch.log 2>&1
+   0 4 * * * CWT_CONFIG=/home/dancemu/clan_war_tracker/config.php /usr/local/bin/ea-php83 /home/dancemu/clan_war_tracker/scripts/fetch.php >> /home/dancemu/clan_war_tracker/data/fetch.log 2>&1
+   ```
+
+   cPanel cron runs in the server's local time zone, so adjust the hour if the server is not on UTC.
+6. Open https://danteachesmath.net/clan.
 
 ## How the data fits together
 

@@ -4,16 +4,23 @@
 // one level above public_html), loads config, and provides JSON helpers.
 declare(strict_types=1);
 
-$candidates = [
-    getenv('CWT_APP_DIR') ?: '',
-    __DIR__ . '/../../app',      // repo layout
-    __DIR__ . '/../../../app',   // host layout: app/ sits beside public_html/
-];
+// Walk upward from this file looking for app/ either directly (repo layout:
+// public/api -> app) or inside a clan_war_tracker/ folder (host layout:
+// public_html/danteachesmath/clan/api -> /home/USER/clan_war_tracker/app).
 $appDir = null;
-foreach ($candidates as $dir) {
-    if ($dir !== '' && is_file($dir . '/bootstrap.php')) {
-        $appDir = $dir;
-        break;
+$env = getenv('CWT_APP_DIR');
+if (is_string($env) && $env !== '' && is_file($env . '/bootstrap.php')) {
+    $appDir = $env;
+} else {
+    $dir = __DIR__;
+    for ($i = 0; $i < 7 && $appDir === null; $i++) {
+        $dir = dirname($dir);
+        foreach ([$dir . '/app', $dir . '/clan_war_tracker/app'] as $candidate) {
+            if (is_file($candidate . '/bootstrap.php')) {
+                $appDir = $candidate;
+                break;
+            }
+        }
     }
 }
 if ($appDir === null) {
