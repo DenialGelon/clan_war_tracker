@@ -1,0 +1,14 @@
+# Real config with API key - never commit
+config.php
+config.*.php
+!config.example.php
+.env
+
+# SQLite database and any local data
+data/*
+!data/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
