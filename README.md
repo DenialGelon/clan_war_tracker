@@ -14,7 +14,7 @@ The official Clash Royale API only returns the last ten war weeks. This project 
 
 - **Current members** sorted by last week's fame, each with a small trend line. Tap a row for the full chart and a per-week table.
 - **Former members** who fought for the clan but have since left, collapsed behind a toggle.
-- **Player lookup** by tag. Pulls the player's current clan and charts their recent weeks, so you can see a recruit's history before they join.
+- **Player lookup** by tag. Pulls the player's current clan, plus any clan their recent battle log shows them fighting for, and charts those weeks. So a recruit who just joined still shows their history from the clan they came from. An optional previous clan tag can be given by hand when the battle log has gone quiet.
 - **Fixed chart scale** from 1200 to 3600 fame on every chart, so any two players are comparable at a glance.
 - **Nothing to build.** PHP, SQLite, and a static page with Chart.js from a CDN. Runs on shared cPanel hosting.
 
@@ -60,7 +60,7 @@ tests/      plain PHP tests plus fixtures/
 JSON endpoints read by the page:
 
 - `api/dashboard.php` - clan, weeks, current and former members. Database only.
-- `api/lookup.php?tag=%23TAG` - one player's history. Calls the live API for the player and their current clan, cached 15 minutes per endpoint.
+- `api/lookup.php?tag=%23TAG[&clan=%23CLAN]` - one player's history. Calls the live API for the player, their battle log, their current clan and up to three clans seen in recent battles (plus the optional `clan`), cached 15 minutes per endpoint.
 
 ## Deploy to cPanel
 

@@ -41,3 +41,6 @@ if ($sampleTag === null) {
 $raw = $api->getRaw(ApiClient::playerPath(Tag::normalize($sampleTag)));
 file_put_contents("$dir/player.json", $raw . "\n");
 echo "Saved player.json for $sampleTag (" . strlen($raw) . " bytes)\n";
+$raw = $api->getRaw(ApiClient::battleLogPath(Tag::normalize($sampleTag)));
+file_put_contents("$dir/battlelog.json", $raw . "\n");
+echo "Saved battlelog.json for $sampleTag (" . strlen($raw) . " bytes)\n";

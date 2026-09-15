@@ -55,6 +55,13 @@ final class ApiClient
         return '/players/' . Tag::urlEncode($playerTag);
     }
 
+    // Roughly the last 25 battles. Used to discover which clans a player
+    // fought for recently, since the profile only names their current clan.
+    public static function battleLogPath(string $playerTag): string
+    {
+        return self::playerPath($playerTag) . '/battlelog';
+    }
+
     // Returns the raw JSON body. Throws ApiException on any non-200 status.
     public function getRaw(string $path): string
     {
@@ -117,6 +124,9 @@ final class ApiClient
     // set of saved responses serves any clan or player during tests.
     public static function fixtureName(string $path): string
     {
+        if (preg_match('#^/players/[^/]+/battlelog$#', $path)) {
+            return 'battlelog.json';
+        }
         if (str_starts_with($path, '/players/')) {
             return 'player.json';
         }

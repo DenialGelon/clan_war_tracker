@@ -46,9 +46,9 @@ main {
 .hint { margin: 0 0 12px; color: var(--muted); font-size: 0.88rem; }
 
 /* Lookup form */
-#lookup-form { display: flex; gap: 8px; }
-#lookup-tag {
-  flex: 1;
+#lookup-form { display: flex; flex-wrap: wrap; gap: 8px; }
+#lookup-tag, #lookup-clan {
+  flex: 1 1 160px;
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);

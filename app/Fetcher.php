@@ -110,6 +110,35 @@ final class Fetcher
         return ['tag' => $playerTag, 'name' => $name, 'clan' => $clan, 'cached' => $result['cached']];
     }
 
+    /**
+     * Downloads a player's battle log and lists the clans they fought for,
+     * most recent first. The profile endpoint only reports the current clan,
+     * so this is the only way to find where a fresh recruit came from.
+     * Empty when the player has not fought in a clan recently.
+     *
+     * @return list<array{tag: string, name: string}>
+     */
+    public function fetchRecentClans(string $playerTag, int $cacheSeconds = 0): array
+    {
+        $result = $this->getJson(ApiClient::battleLogPath($playerTag), '', $cacheSeconds);
+        $clans = [];
+        foreach ($result['json'] as $battle) {
+            // team[0] is the player the log belongs to. Battles fought while
+            // clanless carry no clan at all.
+            $clan = $battle['team'][0]['clan'] ?? null;
+            if (!is_array($clan) || empty($clan['tag'])) {
+                continue;
+            }
+            $tag = Tag::normalize((string) $clan['tag']);
+            if (isset($clans[$tag])) {
+                continue;
+            }
+            $clans[$tag] = ['tag' => $tag, 'name' => (string) ($clan['name'] ?? '')];
+            $this->store->upsertClan($tag, $clans[$tag]['name']);
+        }
+        return array_values($clans);
+    }
+
     /** @return array<string, mixed> */
     private static function decode(string $raw, string $path): array
     {

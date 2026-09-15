@@ -1,18 +1,28 @@
 <?php
-// GET /api/lookup.php?tag=%23ABC123 - one player's war history.
+// GET /api/lookup.php?tag=%23ABC123[&clan=%23XYZ] - one player's war history.
 //
 // Shows what we already have stored, then asks the API for the player's
 // current clan and pulls that clan's recent war weeks so a recruit can be
-// vetted. Live calls are cached for 15 minutes per endpoint so a page full
-// of curious clanmates cannot hammer the API.
+// vetted. The profile only names the current clan, so for someone who just
+// joined us the battle log is scanned for clans they fought for recently and
+// those clans' war logs are pulled too. An optional "clan" parameter names a
+// previous clan by hand for when the battle log has gone quiet.
+// Live calls are cached for 15 minutes per endpoint so a page full of
+// curious clanmates cannot hammer the API.
 declare(strict_types=1);
 require __DIR__ . '/_bootstrap.php';
 
 const LOOKUP_CACHE_SECONDS = 15 * 60;
+// Battle logs are short, but cap the extra clan downloads anyway.
+const LOOKUP_MAX_EXTRA_CLANS = 3;
 
 $tag = Tag::normalize((string) ($_GET['tag'] ?? ''));
 if (!Tag::isValid($tag)) {
     json_error('That does not look like a player tag. Tags use the characters 0 2 8 9 P Y L Q G R J C U V.', 400);
+}
+$manualClanTag = Tag::normalize((string) ($_GET['clan'] ?? ''));
+if ($manualClanTag !== '' && !Tag::isValid($manualClanTag)) {
+    json_error('That does not look like a clan tag. Tags use the characters 0 2 8 9 P Y L Q G R J C U V.', 400);
 }
 
 ['config' => $config, 'pdo' => $pdo] = cwt_open();
@@ -30,13 +40,43 @@ try {
     $name = $player['name'];
     $clan = $player['clan'];
     if ($clan === null) {
-        $notes[] = 'This player is not in a clan right now, so only history stored here is shown.';
-    } elseif ($clan['tag'] !== $config['clan_tag']) {
-        try {
-            $fetcher->fetchWarData($clan['tag'], LOOKUP_CACHE_SECONDS);
-        } catch (ApiException $e) {
-            $notes[] = 'Could not load war data for ' . $clan['name'] . ': ' . $e->getMessage();
+        $notes[] = 'This player is not in a clan right now.';
+    }
+
+    // Clans whose war logs to pull: the current clan, then anything the
+    // battle log shows them fighting for, then a clan named by hand.
+    $clansToFetch = [];
+    if ($clan !== null) {
+        $clansToFetch[$clan['tag']] = $clan['name'];
+    }
+    try {
+        foreach ($fetcher->fetchRecentClans($tag, LOOKUP_CACHE_SECONDS) as $recent) {
+            if (count($clansToFetch) >= LOOKUP_MAX_EXTRA_CLANS + 1) {
+                break;
+            }
+            $clansToFetch[$recent['tag']] ??= $recent['name'];
         }
+    } catch (ApiException $e) {
+        $notes[] = 'Could not read the battle log: ' . $e->getMessage();
+    }
+    if ($manualClanTag !== '') {
+        $clansToFetch[$manualClanTag] ??= $queries->clan($manualClanTag)['name'] ?? Tag::display($manualClanTag);
+    }
+
+    foreach ($clansToFetch as $clanTag => $clanName) {
+        try {
+            $fetcher->fetchWarData((string) $clanTag, LOOKUP_CACHE_SECONDS);
+        } catch (ApiException $e) {
+            $notes[] = 'Could not load war data for ' . $clanName . ': ' . $e->getMessage();
+        }
+    }
+
+    $previous = array_keys(array_diff_key($clansToFetch, $clan !== null ? [$clan['tag'] => 1] : []));
+    if ($previous !== []) {
+        $names = array_map(static fn ($t) => $clansToFetch[$t] !== '' ? $clansToFetch[$t] : Tag::display((string) $t), $previous);
+        $notes[] = 'Also checked ' . implode(', ', $names) . '.';
+    } elseif ($clan !== null && $clan['tag'] === $config['clan_tag']) {
+        $notes[] = 'No other clan found in their recent battles. If you know their previous clan, add its tag to see that history.';
     }
 } catch (ApiException $e) {
     if ($e->status === 404) {
@@ -48,6 +88,8 @@ try {
 }
 
 $weeks = $queries->playerHistory($tag);
+// Axis covers every clan the player has weeks in, plus their current clan, so
+// skipped weeks show as gaps rather than vanishing.
 $clanTags = array_values(array_unique(array_column($weeks, 'clanTag')));
 if ($clan !== null) {
     $clanTags[] = $clan['tag'];

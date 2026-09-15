@@ -62,3 +62,14 @@ function test_player_lookup_for_unknown_tag_is_empty(): void
     assert_same([], $q->playerHistory('NOPE'));
     assert_same(null, $q->player('NOPE'));
 }
+
+function test_recent_clans_come_from_battle_log_most_recent_first(): void
+{
+    $store = new Store(Db::open(':memory:'));
+    $fetcher = new Fetcher(new ApiClient('test', __DIR__ . '/fixtures'), $store);
+    $clans = $fetcher->fetchRecentClans('RG0GUVJG');
+    // Ladder battles carry no clan and repeated clans collapse to one entry.
+    assert_same(['JUQRRL8', '2PQ8LG9C'], array_column($clans, 'tag'));
+    assert_same('Old Clan', $clans[1]['name']);
+    assert_same('Old Clan', (new Queries($store->pdo()))->clan('2PQ8LG9C')['name'] ?? null);
+}
