@@ -201,7 +201,7 @@
 
   // ---------- lookup ----------
 
-  async function lookup(tag, previousClan) {
+  async function lookup(tag) {
     const box = document.getElementById('lookup-result');
     const button = document.getElementById('lookup-button');
     box.hidden = false;
@@ -209,9 +209,7 @@
     box.appendChild(el('p', { class: 'note', text: 'Searching...' }));
     button.disabled = true;
     try {
-      let url = 'api/lookup.php?tag=' + encodeURIComponent(tag);
-      if (previousClan) url += '&clan=' + encodeURIComponent(previousClan);
-      const res = await fetch(url);
+      const res = await fetch('api/lookup.php?tag=' + encodeURIComponent(tag));
       const data = await res.json();
       box.textContent = '';
       if (data.error) {
@@ -280,8 +278,7 @@
   document.getElementById('lookup-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const tag = document.getElementById('lookup-tag').value.trim();
-    const previousClan = document.getElementById('lookup-clan').value.trim();
-    if (tag) lookup(tag, previousClan);
+    if (tag) lookup(tag);
   });
 
   load().catch((err) => {

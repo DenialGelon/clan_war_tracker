@@ -1,12 +1,11 @@
 <?php
-// GET /api/lookup.php?tag=%23ABC123[&clan=%23XYZ] - one player's war history.
+// GET /api/lookup.php?tag=%23ABC123 - one player's war history.
 //
 // Shows what we already have stored, then asks the API for the player's
 // current clan and pulls that clan's recent war weeks so a recruit can be
 // vetted. The profile only names the current clan, so for someone who just
 // joined us the battle log is scanned for clans they fought for recently and
-// those clans' war logs are pulled too. An optional "clan" parameter names a
-// previous clan by hand for when the battle log has gone quiet.
+// those clans' war logs are pulled too.
 // Live calls are cached for 15 minutes per endpoint so a page full of
 // curious clanmates cannot hammer the API.
 declare(strict_types=1);
@@ -19,10 +18,6 @@ const LOOKUP_MAX_EXTRA_CLANS = 3;
 $tag = Tag::normalize((string) ($_GET['tag'] ?? ''));
 if (!Tag::isValid($tag)) {
     json_error('That does not look like a player tag. Tags use the characters 0 2 8 9 P Y L Q G R J C U V.', 400);
-}
-$manualClanTag = Tag::normalize((string) ($_GET['clan'] ?? ''));
-if ($manualClanTag !== '' && !Tag::isValid($manualClanTag)) {
-    json_error('That does not look like a clan tag. Tags use the characters 0 2 8 9 P Y L Q G R J C U V.', 400);
 }
 
 ['config' => $config, 'pdo' => $pdo] = cwt_open();
@@ -44,7 +39,7 @@ try {
     }
 
     // Clans whose war logs to pull: the current clan, then anything the
-    // battle log shows them fighting for, then a clan named by hand.
+    // battle log shows them fighting for.
     $clansToFetch = [];
     if ($clan !== null) {
         $clansToFetch[$clan['tag']] = $clan['name'];
@@ -59,9 +54,6 @@ try {
     } catch (ApiException $e) {
         $notes[] = 'Could not read the battle log: ' . $e->getMessage();
     }
-    if ($manualClanTag !== '') {
-        $clansToFetch[$manualClanTag] ??= $queries->clan($manualClanTag)['name'] ?? Tag::display($manualClanTag);
-    }
 
     foreach ($clansToFetch as $clanTag => $clanName) {
         try {
@@ -74,9 +66,9 @@ try {
     $previous = array_keys(array_diff_key($clansToFetch, $clan !== null ? [$clan['tag'] => 1] : []));
     if ($previous !== []) {
         $names = array_map(static fn ($t) => $clansToFetch[$t] !== '' ? $clansToFetch[$t] : Tag::display((string) $t), $previous);
-        $notes[] = 'Also checked ' . implode(', ', $names) . '.';
+        $notes[] = 'Also checked ' . implode(', ', $names) . ' from their recent battles.';
     } elseif ($clan !== null && $clan['tag'] === $config['clan_tag']) {
-        $notes[] = 'No other clan found in their recent battles. If you know their previous clan, add its tag to see that history.';
+        $notes[] = 'No other clan found in their recent battles.';
     }
 } catch (ApiException $e) {
     if ($e->status === 404) {
